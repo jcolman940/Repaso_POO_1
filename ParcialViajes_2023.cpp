@@ -24,8 +24,8 @@ private:
 public:
     ViajeComun(const char* dest, float monto);
     ~ViajeComun();
-    float calcularCosto() const override;
-    void mostrar(ostream& os) const override;
+    float calcularCosto() const;
+    void mostrar(ostream& os) const;
 };
 
 ViajeComun::ViajeComun(const char* dest, float monto) : montoFijo(monto) {
@@ -55,11 +55,12 @@ private:
 public:
     ViajePorDestino(const char* dest, float dist, float precio);
     ~ViajePorDestino();
-    float calcularCosto() const override;
-    void mostrar(ostream& os) const override;
+    float calcularCosto() const;
+    void mostrar(ostream& os) const;
 };
 
-ViajePorDestino::ViajePorDestino(const char* dest, float dist, float precio) : distanciaKm(dist), precioPorKm(precio) {
+ViajePorDestino::ViajePorDestino(const char* dest, float dist, float precio) 
+    : distanciaKm(dist), precioPorKm(precio) {
     destino = new char[strlen(dest) + 1];
     strcpy(destino, dest);
 }
@@ -82,15 +83,15 @@ void ViajePorDestino::mostrar(ostream& os) const {
 class ViajeMixto : public Viaje {
 private:
     ViajeComun* viajeComun;
-    ViajePorDestino** viajesDestino; // Vector dinámico
+    ViajePorDestino** viajesDestino;
     int cantidadViajesDestino;
-    int capacidadViajesDestino;
+    int capacidadViajesDestino; // Capacidad actual del array
 public:
     ViajeMixto(ViajeComun* comun);
     ~ViajeMixto();
     void agregarViajeDestino(ViajePorDestino* viaje);
-    float calcularCosto() const override;
-    void mostrar(ostream& os) const override;
+    float calcularCosto() const;
+    void mostrar(ostream& os) const;
 };
 
 ViajeMixto::ViajeMixto(ViajeComun* comun) : viajeComun(comun), cantidadViajesDestino(0), capacidadViajesDestino(100) {
@@ -105,17 +106,18 @@ ViajeMixto::~ViajeMixto() {
     delete[] viajesDestino;
 }
 
-void ViajeMixto::agregarViajeDestino(ViajePorDestino* viaje) { // Redimensionar el vector dinámico
-    if (cantidadViajesDestino == capacidadViajesDestino) {
-        capacidadViajesDestino *= 2;
-        ViajePorDestino** nuevo = new ViajePorDestino*[capacidadViajesDestino];
+// Añade un viaje por destino al viaje mixto
+void ViajeMixto::agregarViajeDestino(ViajePorDestino* viaje) {
+    if (cantidadViajesDestino == capacidadViajesDestino) { // Si el array está lleno
+        capacidadViajesDestino *= 2; // Duplica la capacidad
+        ViajePorDestino** nuevo = new ViajePorDestino*[capacidadViajesDestino]; // Crea nuevo array
         for (int i = 0; i < cantidadViajesDestino; i++) {
-            nuevo[i] = viajesDestino[i];
+            nuevo[i] = viajesDestino[i]; // Copia los punteros al nuevo array
         }
-        delete[] viajesDestino;
-        viajesDestino = nuevo;
+        delete[] viajesDestino; // Libera el array viejo
+        viajesDestino = nuevo; // Actualiza el puntero al nuevo array
     }
-    viajesDestino[cantidadViajesDestino++] = viaje;
+    viajesDestino[cantidadViajesDestino++] = viaje; // Añade el nuevo viaje e incrementa el contador
 }
 
 float ViajeMixto::calcularCosto() const {
@@ -148,6 +150,7 @@ public:
     void agregarViaje(Viaje* viaje);
     void mostrarTodos() const;
     float calcularTotal() const;
+    void mostrarViajes() const;
 };
 
 Gestor::Gestor() : cantidadViajes(0), capacidadViajes(10) {
@@ -163,7 +166,7 @@ Gestor::~Gestor() {
 
 void Gestor::agregarViaje(Viaje* viaje) {
     if (cantidadViajes == capacidadViajes) {
-        capacidadViajes *= 2;
+        capacidadViajes *= 2; // Duplica la capacidad
         Viaje** nuevo = new Viaje*[capacidadViajes];
         for (int i = 0; i < cantidadViajes; i++) {
             nuevo[i] = viajes[i];
@@ -188,6 +191,10 @@ float Gestor::calcularTotal() const {
     return total;
 }
 
+void Gestor::mostrarViajes() const{
+    cout << "\n" << "Viajes totales: "<< cantidadViajes << endl;
+}
+
 /*-------------------------------------------------------------------------------------------*/
 
 int main() {
@@ -210,5 +217,7 @@ int main() {
     // Calcular total
     cout << "Total a abonar por todos los viajes: $" << objeto.calcularTotal() << endl;
     
+    objeto.mostrarViajes();
+
     return 0;
 }
